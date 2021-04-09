@@ -1,0 +1,65 @@
+<% contentFor('body') %>
+
+<div class="alert alert-primary text-center" role="alert">
+   Messenger
+</div>
+
+<div class="card text-center">
+    <form id="chat">
+        <div class="card-header">
+            Nome
+            <div class="col-2 container mt-2">
+                <input type="text" name="username" class="form-control" placeholder="Nome">
+            </div> 
+        </div>
+        <div class="card-body alert alert-dark mt-3" role="alert">
+            <div class="row">
+                <div class="mb-3 messages"></div>
+            </div>
+        </div>
+        <div class="card-footer">
+            Mensagem
+            <div class="col-4 container mt-2">
+                <input type="text" name="message"  class="form-control" placeholder="Mensagem">
+                <button class="btn btn-primary mt-3" type="submit">Enviar</button>
+            </div>
+        </div> 
+    </form>
+</div>
+
+<script type="text/javascript">
+
+    var socket = io('http://localhost:3000');
+
+    function renderMessage(message){
+    $('.messages').append('<div class="message"><strong>'+ message.author +'</strong>: '+ message.message +'<div>');
+    }
+
+    socket.on('previousMessages', function(messages){
+    for (message of messages){
+        renderMessage(message);
+    }
+    });  
+
+    socket.on('receivedMessage', function(message){
+    renderMessage(message);
+    });
+
+    $('#chat').submit(function(event){
+        event.preventDefault();
+
+        var author = $('input[name=username]').val();
+        var message = $('input[name=message]').val();
+
+        if (author.length && message.length){
+            var messageObejct = {
+                author : author,
+                message : message,
+            };
+
+            renderMessage(messageObejct);
+
+            socket.emit('sendMessage', messageObejct);
+        }
+    });
+</script>
